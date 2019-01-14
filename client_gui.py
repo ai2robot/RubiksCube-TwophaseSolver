@@ -4,11 +4,12 @@ from tkinter import *
 import socket
 import face
 import cubie
-
+import arduino
 
 # ################################## some global variables and constants ###############################################
 DEFAULT_HOST = 'localhost'
 DEFAULT_PORT = '8080'
+DEFAULT_COM = 'COM4'
 width = 60  # width of a facelet in pixels
 facelet_id = [[[0 for col in range(3)] for row in range(3)] for face in range(6)]
 colorpick_id = [0 for i in range(6)]
@@ -81,6 +82,7 @@ def solve():
     # host = 'f9f0b2jt6zmzyo6b.myfritz.net'  # my RaspberryPi, if online
     host = txt_host.get(1.0, END).rstrip()  # default is localhost
     port = int(txt_port.get(1.0, END))  # default is port 8080
+    com = txt_com.get(1.0, END).rstrip()  # default is COM3
 
     try:
         remote_ip = socket.gethostbyname(host)
@@ -104,7 +106,9 @@ def solve():
     except:
         show_text('Cannot send cube configuration to server.')
         return
-    show_text(s.recv(2048).decode())
+    solve_step = s.recv(2048).decode()
+    show_text(solve_step)
+    arduino.send_arduino(com, solve_step)
 ########################################################################################################################
 
 # ################################# Functions to change the facelet colors #############################################
@@ -181,6 +185,9 @@ txt_host.insert(INSERT, DEFAULT_HOST)
 txt_port = Text(height=1, width=20)
 txt_port_window = canvas.create_window(10 + 0 * width, 10 + 1.5 * width, anchor=NW, window=txt_port)
 txt_port.insert(INSERT, DEFAULT_PORT)
+txt_com = Text(height=1, width=20)
+txt_com_window = canvas.create_window(10 + 0 * width, 10 + 2 * width, anchor=NW, window=txt_com)
+txt_com.insert(INSERT, DEFAULT_COM)
 canvas.bind("<Button-1>", click)
 create_facelet_rects(width)
 create_colorpick_rects(width)
